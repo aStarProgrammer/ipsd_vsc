@@ -1,0 +1,1 @@
+move /Y ..\ipsd_vsc ..\..\ipsd_vsc_release\Darwin64\
