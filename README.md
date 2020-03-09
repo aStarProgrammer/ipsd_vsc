@@ -300,8 +300,11 @@ Note: if the command not works as you expected, check the ipsd.log in the folder
 5. Add a file with same name, extension is .meta
 
      :#   "Title : Download ipsc"
+
      :#   "Author: xxxx"
+
      :#   "Description: Download ipsc "
+
      :#   "IsTop:True"
 
 6. Save the file
@@ -321,8 +324,11 @@ Note: if the command not works as you expected, check the ipsd.log in the folder
 3. Modify the meta data file 
 
      :#   "Title : Download ipsc"
+
      :#   "Author: xxxx"
+
      :#   "Description: Download ipsc "
+
      :#   "IsTop:True"
 
 4. Save the file
