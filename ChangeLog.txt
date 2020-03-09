@@ -36,3 +36,7 @@ if you want to update the item, you can update the name and true or false. if yo
 If you want to delete it, just delete it from Link.txt, then run ipsd RunMonitor
 
 * Change Link.txt to Link.liks
+
+0.2.0.2 2020/3/8
+1. Move meta of markdown and html form the starting position of the file to a seperate meta data file (.meta)
+2. Remove template folder, users can create md and html files as how they want.
