@@ -8,7 +8,6 @@ import (
 	"ipsd_vsc/Configuration"
 	"ipsd_vsc/Monitor"
 	"ipsd_vsc/Utils"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -54,7 +53,7 @@ func Try2FindSmFile(monitorFolderPath string) (string, error) {
 
 	files, _ := ioutil.ReadDir(monitorFolderPath)
 	for _, f := range files {
-		if strings.HasSuffix(f.Name(), ".sm") {
+		if strings.HasSuffix(f.Name(), ".sm.json") {
 			smFileName = f.Name()
 			smCount++
 			if smCount > 1 {
@@ -177,7 +176,7 @@ func NewMonitor(monitorFolderPath, siteFolderPath, siteTitle string) (bool, erro
 		return false, errors.New("New Monitor: There is already a monitor in folder " + monitorFolderPath)
 	}
 
-	var smp = Monitor.NewSiteMonitor_WithArgs(monitorFolderPath, siteFolderPath, siteTitle, Utils.CurrentTime())
+	var smp = Monitor.NewSiteMonitor_WithArgs(monitorFolderPath, siteFolderPath, siteTitle)
 
 	//Export files to monitor folder
 	var monitorSiteFilePath = filepath.Join(siteFolderPath, siteTitle+".sp")
@@ -237,11 +236,6 @@ func NewMonitor(monitorFolderPath, siteFolderPath, siteTitle string) (bool, erro
 		Utils.MakeFolder(fileMonitorFolder)
 	}
 
-	var linkMonitorFile = filepath.Join(linkMonitorFolder, "Link.liks")
-	if Utils.PathIsExist(linkMonitorFile) == false {
-		Utils.CreateFile(linkMonitorFile)
-	}
-
 	//Copy Template file,for now News and Blank
 	/*
 		var templateFolderPath = filepath.Join(monitorFolderPath, "Templates")
@@ -265,7 +259,7 @@ func NewMonitor(monitorFolderPath, siteFolderPath, siteTitle string) (bool, erro
 	*/
 
 	//Save Monitor File
-	monitorDefinitionFilePath = filepath.Join(monitorFolderPath, "monitor.sm")
+	monitorDefinitionFilePath = filepath.Join(monitorFolderPath, "monitor.sm.json")
 
 	bSave, errSave := smp.SaveToFile(monitorDefinitionFilePath)
 	if errSave != nil {
@@ -353,8 +347,6 @@ func RunMonitor(monitorFolderPath, indexPageSize string) (bool, error) {
 	var markdownFolderPath = filepath.Join(monitorFolderPath, "Markdown")
 
 	var htmlFolderPath = filepath.Join(monitorFolderPath, "Html")
-
-	var linkFilePath = filepath.Join(monitorFolderPath, "Link", "Link.liks")
 
 	var linkFolderPath = filepath.Join(monitorFolderPath, "Link")
 
@@ -693,165 +685,171 @@ func RunMonitor(monitorFolderPath, indexPageSize string) (bool, error) {
 
 	}
 
-	if Utils.PathIsExist(linkFilePath) {
-		fmt.Println("Checking Link")
-		linkFileInfo, errFileInfo := os.Stat(linkFilePath)
-		if errFileInfo == nil {
-			var addLink, updateLink, deleteLink int
-			addLink = 0
-			updateLink = 0
-			deleteLink = 0
-			fLastModified := linkFileInfo.ModTime().Format("2006-01-02 15:04:05")
+	if Utils.PathIsExist(linkFolderPath) {
+		fmt.Println("Checking Links")
+		files, _ := ioutil.ReadDir(linkFolderPath)
+		var addLink, updateLink, deleteLink int
+		addLink = 0
+		updateLink = 0
+		deleteLink = 0
 
-			if smp.LinkFileLastModified < fLastModified {
-				fLinks, errReadLinks := Monitor.ReadLinksFromFile(linkFilePath)
-				if errReadLinks != nil {
-					var errMsg = "RunMonitor: Cannot read Links from " + linkFilePath
+		for _, f := range files {
+
+			if strings.HasPrefix(f.Name(), "_") {
+				fmt.Println("Name of " + f.Name() + " start with _ , and it will be treated as temp file to be ignored. If you finished it and want to publish it ,remove _ from beginning of the file name")
+				continue
+			}
+			var fPath = filepath.Join(linkFolderPath, f.Name())
+			if strings.HasSuffix(fPath, ".lik.json") {
+				var fLastModified = f.ModTime().Format("2006-01-02 15:04:05")
+
+				linkMeta, errReadLinkMeta := Monitor.ReadLinkMetaFromFile(fPath)
+				if errReadLinkMeta != nil {
+					var errMsg = "RunMonitor: Cannot read Link properties"
 					Utils.Logger.Println(errMsg)
-				} else {
-
-					//Delete
-					var deletedLinks []Monitor.LinkPage
-					for _, sLink := range smp.LinkFiles {
-						if Monitor.FindLink(sLink, fLinks) == false {
-							fmt.Println(sLink.Url + " has been deleted, will delete it from ispc")
-
-							_, errDelete := Monitor.IPSC_DeletePage(smp.SiteFolderPath, smp.SiteTitle, sLink.ID)
-
-							if errDelete != nil {
-								var errMsg = "RunMonitor: Cannot Delete Link " + sLink.Url
-								Utils.Logger.Println(errMsg)
-							}
-
-							imagePath, errImagePath := Utils.GetImageWithSameName2(linkFolderPath, sLink.Title)
-
-							if errImagePath == nil {
-								bDeleteImage := Utils.DeleteFile(imagePath)
-								if bDeleteImage == false {
-									var errMsg = "RunMonitor: Cannot Delete Image " + imagePath
-									Utils.Logger.Println(errMsg)
-								}
-							}
-
-							deleteLink = deleteLink + 1
-							deletedLinks = append(deletedLinks, sLink)
-
-						}
-					}
-
-					for _, deletedLink := range deletedLinks {
-						smp.DeleteLink(deletedLink.Url)
-					}
-
-					for _, fLink := range fLinks {
-						index := smp.GetLink(fLink.Url)
-						if index == -1 {
-							fmt.Println(fLink.Url + " is a new Link, will add it to ipsc")
-
-							//Add
-							var linkFolderPath = filepath.Join(monitorFolderPath, "Link")
-							titleImagePath, errImageName := Utils.GetImageWithSameTitle(linkFolderPath, fLink.Title)
-
-							if errImageName != nil {
-								Utils.Logger.Println("No Title Image with same name of " + fLink.Url + " found")
-								Utils.Logger.Println("Title Image of " + fLink.Url + " will be empty")
-							}
-							//Check Title Image Size, should smaller than 30KB
-							bImageSize, errImageSize := Utils.ImageTooBig(titleImagePath)
-
-							if errImageSize != nil {
-								Utils.Logger.Println("RunMonitor: Cannot check image size, please make sure the image is smaller than 30KB")
-								Utils.Logger.Println(titleImagePath)
-								return false, errors.New("RunMonitor: Cannot check image size, please make sure the image is smaller than 30KB")
-							}
-
-							if bImageSize == true {
-								var errMsg = "RunMonitor: TitleImage " + titleImagePath + " is bigger than 30KB, please edit it firstly to make it smaller than 30KB, then add again"
-								Utils.Logger.Println(errMsg)
-								return false, errors.New(errMsg)
-							}
-							newID, _, errAddLink := Monitor.IPSC_AddLink(smp.SiteFolderPath, smp.SiteTitle, fLink.Url, fLink.Title, Utils.CurrentUser(), titleImagePath, fLink.IsTop)
-
-							if errAddLink != nil {
-								var errMsg = "RunMonitor: Cannot Add Link file " + fLink.Url
-								Utils.Logger.Println(errMsg)
-								return false, errors.New(errMsg)
-							}
-
-							var newLink Monitor.LinkPage
-							newLink.Url = fLink.Url
-							newLink.ID = newID
-							newLink.Title = fLink.Title
-							newLink.IsTop = fLink.IsTop
-
-							smp.DeleteLink(fLink.Url)
-							smp.AddLink(newLink)
-							addLink = addLink + 1
-
-						} else {
-							//Update
-
-							sLink := smp.LinkFiles[index]
-							fmt.Println(sLink.Url + " has been modified, will update it with ipsc")
-
-							if sLink.ID == fLink.ID && (sLink.Url != fLink.Url || sLink.Title != fLink.Title || sLink.IsTop != fLink.IsTop) {
-								var linkFolderPath = filepath.Join(monitorFolderPath, "Link")
-								titleImagePath, errImageName := Utils.GetImageWithSameTitle(linkFolderPath, fLink.Title)
-
-								if errImageName != nil {
-									Utils.Logger.Println("No Title Image with same name of " + fLink.Url + " found")
-									Utils.Logger.Println("Title Image of " + fLink.Url + " will be empty")
-								}
-
-								//Check Title Image Size, should smaller than 30KB
-								bImageSize, errImageSize := Utils.ImageTooBig(titleImagePath)
-
-								if errImageSize != nil {
-									Utils.Logger.Println("RunMonitor: Cannot check image size, please make sure the image is smaller than 30KB")
-									Utils.Logger.Println(titleImagePath)
-									return false, errors.New("RunMonitor: Cannot check image size, please make sure the image is smaller than 30KB")
-								}
-
-								if bImageSize == true {
-									var errMsg = "RunMonitor: TitleImage " + titleImagePath + " is bigger than 30KB, please edit it firstly to make it smaller than 30KB, then add again"
-									Utils.Logger.Println(errMsg)
-									return false, errors.New(errMsg)
-								}
-
-								_, errUpdateLink := Monitor.IPSC_UpdateLink(smp.SiteFolderPath, smp.SiteTitle, fLink.ID, fLink.Url, fLink.Title, Utils.CurrentUser(), titleImagePath, fLink.IsTop)
-
-								if errUpdateLink != nil {
-									var errMsg = "RunMonitor: Cannot Update Link file " + fLink.Url
-									Utils.Logger.Println(errMsg)
-									return false, errors.New(errMsg)
-								}
-
-								smp.DeleteLink(sLink.Url)
-								smp.AddLink(fLink)
-								updateLink = updateLink + 1
-							}
-						}
-					}
-
-					if addLink != 0 || updateLink != 0 || deleteLink != 0 {
-						linkChanged = true
-						fmt.Println("Link Files")
-						fmt.Println("    Add:    " + strconv.Itoa(addLink))
-						fmt.Println("    Update: " + strconv.Itoa(updateLink))
-						fmt.Println("    Delete: " + strconv.Itoa(deleteLink))
-						//Save Link File
-						Monitor.SaveLinksToFile(linkFilePath, smp.LinkFiles)
-					} else {
-						linkChanged = false
-						fmt.Println("Links not changed, pass")
-					}
-
+					return false, errReadLinkMeta
 				}
-			} else {
-				linkChanged = false
-				fmt.Println("Links not changed, pass")
+
+				index := smp.GetLink(linkMeta.Url)
+
+				if index == -1 {
+					//Add
+					fmt.Println(fPath + " is a new link, will add it to ipsc")
+					addLink = addLink + 1
+
+					titleImagePath, errImageName := Utils.GetImageWithSameName2(linkFolderPath, linkMeta.Title)
+
+					if errImageName != nil {
+						Utils.Logger.Println("No Title Image with same name of " + fPath + " found")
+						Utils.Logger.Println("Title Image of " + fPath + " will be empty")
+					}
+					//Check Title Image Size, should smaller than 30KB
+					bImageSize, errImageSize := Utils.ImageTooBig(titleImagePath)
+
+					if errImageSize != nil {
+						Utils.Logger.Println("RunMonitor: Cannot check image size, please make sure the image is smaller than 30KB")
+						Utils.Logger.Println(titleImagePath)
+						return false, errors.New("RunMonitor: Cannot check image size, please make sure the image is smaller than 30KB")
+					}
+
+					if bImageSize == true {
+						var errMsg = "RunMonitor: TitleImage " + titleImagePath + " is bigger than 30KB, please edit it firstly to make it smaller than 30KB, then add again"
+						Utils.Logger.Println(errMsg)
+						return false, errors.New(errMsg)
+					}
+
+					newID, _, errAdd := Monitor.IPSC_AddLink(smp.SiteFolderPath, smp.SiteTitle, linkMeta.Url, linkMeta.Title, linkMeta.Author, titleImagePath, linkMeta.IsTop)
+
+					if errAdd != nil {
+						var errMsg = "RunMonitor: Cannot Add Link from file " + fPath
+						Utils.Logger.Println(errMsg)
+						Utils.Logger.Println(errAdd.Error())
+						return false, errors.New(errMsg)
+					}
+
+					var newLinkPage Monitor.LinkPage
+					newLinkPage.Url = linkMeta.Url
+					newLinkPage.ID = newID
+					newLinkPage.LastModified = Utils.CurrentTime()
+					newLinkPage.Title = linkMeta.Title
+
+					smp.AddLink(newLinkPage)
+
+				} else {
+					//Update
+					var sourceLink = smp.LinkFiles[index]
+
+					//Source file old
+					if sourceLink.LastModified < fLastModified {
+						fmt.Println(fPath + " has been modified, will update it with ipsc")
+						updateLink = updateLink + 1
+
+						titleImagePath, errImageName := Utils.GetImageWithSameName2(linkFolderPath, linkMeta.Title)
+
+						if errImageName != nil {
+							Utils.Logger.Println("No Title Image with same name of " + fPath + " found")
+							Utils.Logger.Println("Title Image of " + fPath + " will be empty")
+						}
+						//Check Title Image Size, should smaller than 30KB
+						bImageSize, errImageSize := Utils.ImageTooBig(titleImagePath)
+
+						if errImageSize != nil {
+							Utils.Logger.Println("RunMonitor: Cannot check image size, please make sure the image is smaller than 30KB")
+							Utils.Logger.Println(titleImagePath)
+							return false, errors.New("RunMonitor: Cannot check image size, please make sure the image is smaller than 30KB")
+						}
+
+						if bImageSize == true {
+							var errMsg = "RunMonitor: TitleImage " + titleImagePath + " is bigger than 30KB, please edit it firstly to make it smaller than 30KB, then add again"
+							Utils.Logger.Println(errMsg)
+							return false, errors.New(errMsg)
+						}
+						_, errUpdate := Monitor.IPSC_UpdateLink(smp.SiteFolderPath, smp.SiteTitle, sourceLink.ID, sourceLink.Url, linkMeta.Title, linkMeta.Author, titleImagePath, linkMeta.IsTop)
+
+						if errUpdate != nil {
+							var errMsg = "RunMonitor: Cannot Update Link from file " + fPath
+							Utils.Logger.Println(errMsg)
+							return false, errors.New(errMsg)
+						}
+
+						sourceLink.LastModified = fLastModified
+						smp.UpdateLink(sourceLink)
+					}
+				}
 			}
 		}
+
+		//Delete
+		var deletedLinks []Monitor.LinkPage
+
+		linkMetas, errReadLinkMetas := Monitor.ReadLinkMetadatasFromFolder(linkFolderPath)
+
+		if errReadLinkMetas != nil {
+			var errMsg = "RunMonitor: Cannot Read Links from Folder " + linkFolderPath
+			Utils.Logger.Println(errMsg)
+			return false, errors.New(errMsg)
+		}
+
+		for _, sourceLink := range smp.LinkFiles {
+			if FindLink(sourceLink.Url, linkMetas) == false {
+				fmt.Println(sourceLink.Url + " has been deleted, will delete it from ispc")
+				deleteLink = deleteLink + 1
+				_, errDelete := Monitor.IPSC_DeletePage(smp.SiteFolderPath, smp.SiteTitle, sourceLink.ID)
+
+				if errDelete != nil {
+					var errMsg = "RunMonitor: Cannot Delete Link " + sourceLink.Url
+					Utils.Logger.Println(errMsg)
+				}
+
+				imagePath, errImagePath := Utils.GetImageWithSameName2(linkFolderPath, sourceLink.Title)
+
+				if errImagePath == nil {
+					bDeleteImage := Utils.DeleteFile(imagePath)
+					if bDeleteImage == false {
+						var errMsg = "RunMonitor: Cannot Delete Image " + imagePath
+						Utils.Logger.Println(errMsg)
+					}
+				}
+
+				deletedLinks = append(deletedLinks, sourceLink)
+			}
+		}
+
+		for _, deleteLink := range deletedLinks {
+			smp.DeleteLink(deleteLink.Url)
+		}
+
+		if addLink == 0 && updateLink == 0 && deleteLink == 0 {
+			linkChanged = false
+			fmt.Println("Links not changed, pass")
+		} else {
+			linkChanged = true
+			fmt.Println("Links ")
+			fmt.Println("    Add:    " + strconv.Itoa(addLink))
+			fmt.Println("    Update: " + strconv.Itoa(updateLink))
+			fmt.Println("    Delete: " + strconv.Itoa(deleteLink))
+		}
+
 	}
 
 	if Utils.PathIsExist(normalFileFolderPath) {
@@ -1016,6 +1014,16 @@ func RunMonitor(monitorFolderPath, indexPageSize string) (bool, error) {
 
 	fmt.Println("***************")
 	return true, nil
+}
+
+func FindLink(linkUrl string, linkMetas []Monitor.LinkMeta) bool {
+	for _, fLink := range linkMetas {
+		if linkUrl == fLink.Url {
+			return true
+		}
+	}
+
+	return false
 }
 
 func Run() {

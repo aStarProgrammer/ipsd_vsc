@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"ipsd_vsc/Monitor"
 	"ipsd_vsc/Utils"
@@ -267,10 +268,27 @@ func testReadHtmlFileProperties() {
 	fmt.Println(htmProperties.IsTop)
 }
 
-func testReadLinksFile() {
-	var filePath = "F:\\WatchdogSpace\\Link\\Link.liks"
+func testMarshalLinkPage() {
 
-	links, errProperties := Monitor.ReadLinksFromFile(filePath)
+	var lik Monitor.LinkPage
+	lik.ID = "1111111"
+	lik.Title = "google"
+	lik.Url = "https://www.google.com"
+	lik.LastModified = Utils.CurrentTime()
+
+	_jsonbyte, errJson := json.Marshal(lik)
+
+	if errJson == nil {
+		strJson := string(_jsonbyte)
+		fmt.Println(strJson)
+	}
+
+}
+
+func testReadLinksFile() {
+	var filePath = "F:\\IPSiteWatchdogSpace\\Link"
+
+	links, errProperties := Monitor.ReadLinkMetadatasFromFolder(filePath)
 
 	if errProperties != nil {
 		var errMsg = "Cannot read properties"
@@ -280,45 +298,11 @@ func testReadLinksFile() {
 
 	for _, link := range links {
 		fmt.Println(link.Url)
-		fmt.Println(link.ID)
+		fmt.Println(link.Author)
 		fmt.Println(link.Title)
+		fmt.Println(link.Description)
+		fmt.Println(link.IsTop)
 		fmt.Println("--------")
-	}
-
-}
-
-func testSaveLinksFile() {
-	var filePath = "F:\\ppSite\\src\\Link1.txt"
-
-	var links []Monitor.LinkPage
-
-	var link1 Monitor.LinkPage
-	link1.Title = "google"
-	link1.Url = "https://www.google.com"
-	link1.IsTop = false
-	link1.ID = Utils.GUID()
-
-	var link2 Monitor.LinkPage
-	link2.Title = "microsoft"
-	link2.Url = "https://www.microsoft.com"
-	link2.ID = Utils.GUID()
-	link2.IsTop = false
-
-	links = append(links, link1)
-	links = append(links, link2)
-
-	json, err2Json := Monitor.Links2Json(links)
-
-	if err2Json != nil {
-		fmt.Println(err2Json.Error())
-	}
-
-	fmt.Println(json)
-
-	_, errSave := Monitor.SaveLinksToFile(filePath, links)
-
-	if errSave != nil {
-		fmt.Println(errSave.Error())
 	}
 
 }
@@ -422,29 +406,6 @@ func testGetMetaFilePathWithSameName() {
 
 }
 
-func testReadHtmlFileProperties2() {
-	var filePath = "F:\\ppSite\\src\\Html\\H2.html"
-	properties, _, errProperties := Monitor.ReadHtmlProperties(filePath)
-
-	if errProperties != nil {
-		fmt.Println(errProperties.Error())
-	}
-
-	fmt.Println(properties.Title)
-}
-
-func testReadMarkdownFileProperties2() {
-	var filePath = "F:\\ppSite\\src\\Markdown\\ipscDownload.md"
-	properties, _, errProperties := Monitor.ReadMarkdownPageProperties(filePath)
-
-	if errProperties != nil {
-		fmt.Println(errProperties.Error())
-	}
-
-	fmt.Println(properties.Title)
-
-}
-
 func test() {
-	testReadHtmlFileProperties2()
+	testReadLinksFile()
 }

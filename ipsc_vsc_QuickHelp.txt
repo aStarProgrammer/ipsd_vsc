@@ -1,0 +1,177 @@
+IPSC(InterPlanet Site Creator) is a tool to create static html site with index pages from md,html and hyperlink
+
+* Get This Help
+		ipsc -Command "Help" -HelpType
+
+	Get help
+		HelpType can be "QuickHelp" or "FullHelp"
+		QuickHelp will return this help, and FullHelp will return a help with more information
+
+* Create New Empty Site
+		ipsc -Command NewSite -SiteFolder  -SiteFolder -SiteTitle  -SiteAuthor  -SiteDescription  -OutputFolder
+
+	Create a new empty site project
+	
+	Note: Run this method with super user or administrator permission
+		  In Windows, start cmd with Administrator user, then run ipsc -Command "NewSite"
+		  In Linux/Darwin run this cmd with sudo
+		
+	Example:
+		ipsc -Command "NewSite" -SiteFolder "F:\TestSite" -SiteTitle "Test Site" -SiteAuthor "Chao(sdxianchao@gmail.com)" -SiteDescription "Test Site for ipsc" -OutputFolder "F:\SiteOutputFolder"
+
+		ipsc -Command "NewSite" -SiteFolder "F:\TestSite" -SiteTitle "Test Site" -SiteAuthor "Chao(sdxianchao@gmail.com)" -SiteDescription "Test Site for ipsc"
+	
+
+* Update Site Property
+		ipsc -Command "UpdateSite" -SiteFolder -SiteTitle -SiteAuthor -SiteDescription
+
+	This command will update the properties stored in sp file and, will update the name of sp file as SiteTitle changed
+
+	Example:
+		ipsc -Command "UpdateSite" -SiteFolder "F:\TestSite" -SiteTitle "Test Site 1" -SiteAuthor "Chao(sdxianchao@gmail.com)" -SiteDescription "Test Site for ipsc"
+
+		ipsc -Command "UpdateSite" -SiteFolder "F:\TestSite" -SiteAuthor "Chao(sdxianchao@hotmail.com)"
+
+		ipsc -Command "UpdateSite" -SiteFolder "F:\TestSite" -SiteTitle "Test Site " -SiteAuthor "Chao(sdxianchao@hotmail.com)" -SiteDescription "Test Site for ipsc"
+
+* Get Site Properties
+		ipsc -Command "GetSiteProperty" -SiteFolder  -SiteTitle
+
+	This command will display site properties of a site project
+
+	Example:
+		ipsc -Command "GetSiteProperty" -SiteFolder "F:\TestSite" -SiteTitle "Test Site"
+	
+* List Source Pages
+		ipsc -Command "ListSourcePages" -SiteFolder -SiteTitle
+
+	List all the source pages
+
+	Example
+		ipsc -Command "ListSourcePages" -SiteFolder "F:\TestSite" -SiteTitle "Test Site"
+
+* List Output Pages
+		ipsc -Command "ListOutputPages" -SiteFolder -SiteTitle
+
+	List all the output pages
+
+	Example
+		ipsc -Command "ListOutputPages" -SiteFolder "F:\TestSite" -SiteTitle "Test Site"
+
+* List Page
+		ipsc -Command "ListPage" -SiteFolder  -SiteTitle  -PageID
+
+	Display properties of page with specific ID
+
+	Example
+		ipsc -Command "ListPage" -SiteFolder "F:\TestSite" -SiteTitle "Test Site" -PageID "d0b75300ade9ea73cf45f29c7aac6ffa"
+
+* Export Source Pages
+		ipsc -Command "ExportSourcePages" -SiteFolder -SiteTitle -ExportFolder
+	
+	Export source files (Markdown,Html,Links and title images) into ExportFolder
+	
+	Example 
+		ipsc -Command "ExportSourcePages" -SiteFoler "F:\TestSite" -SiteTitle "Test Site" -ExportFolder "F:\WatchDogSpace"
+
+* Create Markdown File
+		ipsc -Command "CreateMarkdown" -SiteFolder -SiteTitle -PagePath -MarkdownType
+
+	Create Markdown file at PagePath with MarkdownType, copy needed md file from SiteFolder with SiteTitle
+
+	Example
+		ipsc -Command "CreateMarkdown" -SiteFolder "F:\TestSite" -SiteTitle "Test Site" -PagePath "F:\MarkdownWorkspace\_A1.md" -MarkdownType "News"
+* Add Page
+		ipsc -Command "AddPage" -SiteFolder -SiteTitle -PagePath -LinkUrl -PageType -PageTitle -PageAuthor -TitleImage -IsTop
+
+	Add the Source Page file, with type PageType (MARKDOWN,HTML,LINK) to the SiteFolder\Src\Markdown or SiteFolder\Src\Html, and add metadata to site project file, including PageTitle PageAuthor PageTitleImage
+
+	Example
+		ipsc -Command "AddPage" -SiteFolder "F:\TestSite" -SiteTitle "Test Site" -PagePath "F:\MarkdownWorkspace\A1.md" -PageType "Markdown" -PageTitle "Test Markdown Page" -PageAuthor "Chao" -TitleImage "F:\MarkdownWorkspace\muxing.png" -IsTop false
+
+		ipsc -Command "AddPage" -SiteFolder "F:\TestSite" -SiteTitle "Test Site" -PagePath "F:\MarkdownWorkspace\_A1.html" -PageType "Html" -PageTitle "Test Html Page" -PageAuthor "Chao" -TitleImage "F:\MarkdownWorkspace\muxing.png" -IsTop true
+
+		ipsc -Command "AddPage" -SiteFolder "F:\TestSite" -SiteTitle "Test Site" -LinkUrl "https://www.google.com" -PageType "Link" -PageTitle "Test Link Page" -PageAuthor "Chao" -TitleImage "F:\MarkdownWorkspace\muxing.png" -IsTop true
+
+* Update Page
+		ipsc -Command "UpdatePage" -SiteFolder -SiteTitle -PageID -PagePath -LinkUrl -PageTitle -PageAuthor -TitleImage -IsTop
+
+	Update the Source Page file, Update the file or properties if any of them are assigned.
+
+	Example
+		ipsc -Command "UpdatePage" -SiteFolder "F:\TestSite" -SiteTitle "Test Site" -PageID "fc0f8d635ebb04d1c9393a722e8fc185" -PagePath "F:\MarkdownWorkspace\A1.md" -PageTitle "Test Markdown Page 1" -PageAuthor "Chao(sdxianchao@gmail.com)" -TitleImage "F:\MarkdownWorkspace\CNUK.png" -IsTop true
+
+		ipsc -Command "UpdatePage" -SiteFolder "F:\TestSite" -SiteTitle "Test Site" -PageID "fc0f8d635ebb04d1c9393a722e8fc185"  -PageTitle "Test Page Title 2"
+
+		ipsc -Command "UpdatePage" -SiteFolder "F:\TestSite" -SiteTitle "Test Site" -PageID "15fc19f3766fd7edf1f129018faa29cc" -LinkUrl "https://www.microsoft.com"
+
+* Delete Page
+		ipsc -Command "DeletePage" -SiteFolder -SiteTitle -PageID -RestorePage
+
+	Delete the page with PageID from site project , if RestorePage is true, page will be moved to recycled bin. if RestorePage is false, page will be deleted directly. RestorePage defaultly true.
+
+	Example
+		ipsc -Command "DeletePage"  -SiteFolder "F:\TestSite" -SiteTitle "Test Site" -PageID "fc0f8d635ebb04d1c9393a722e8fc185" -RestorePage true
+
+* List Recycled Pages
+		ipsc -Command "ListRecycledPages" -SiteFolder -SiteTitle
+
+	List all the pages in the recycled bin
+
+	Example
+		ipsc -Command "ListRecycledPages" -SiteFolder "F:\TestSite" -SiteTitle "Test Site"
+
+* Restore Recycled Page
+		ipsc -Command "RestoreRecycledPage" -SiteFolder -SiteTitle -PageID
+
+	Restore page with PageID if page is recycled
+
+	Example
+		ipsc -Command "RestoreRecycledPage" -SiteFolder "F:\TestSite" -SiteTitle "Test Site" -PageID "fc0f8d635ebb04d1c9393a722e8fc185"
+
+* Clear Recycled Pages
+		ipsc -Command "ClearRecycledPages" -SiteFolder -SiteTitle
+	Remove all the recycled pages
+
+	Example
+		ipsc -Command "ClearRecycledPages" -SiteFolder "F:\TestSite" -SiteTitle "Test Site"
+
+* Add File
+		ipsc -Command "AddFile" -SiteFolder  -SiteTitle  -FilePath  -Force 
+
+	Add the file with FilePath, the FilePath can be file or folder, if it is a folder, the folder will be added to the site project. 
+	If you set Force to "true", ipsc will replace the existing file during adding
+	
+	Example
+		ipsc -Command "AddFile" -SiteFolder "F:\TestSite" -SiteTitle "Test Site" -FilePath "D:\softwares" -Force "true"
+		
+* Delete File
+		ipsc -Command "DeleteFile" -SiteFolder  -SiteTitle -FilePath 
+
+	Delete the file with FilePath, the FilePath can be file or folder, if FilePath is a folder, the folder will be deleted from site project
+
+	Example
+		ipsc -Command "DeleteFile" -SiteFolder "F:\TestSite" -SiteTitle "Test Site" -FilePath ".\Files\go.msi"
+
+	Use FilePath ".\Files" or "./Files" to clear the Files Folder 
+		
+	Example 
+		ipsc -Command "DeleteFile" -SiteFolder "F:\TestSite" -SiteTitle "Test Site" -FilePath ".\Files"
+	
+* List File
+		ipsc -Command "ListFile" -SiteFolder  -SiteTitle 
+	
+	List all the files added by AddFile, return name and its relative Url, the url can be used as src/href in your md or html file, or used to delete the file
+	
+	Example:
+		ipsc -Command "ListFile" -SiteFolder "F:\TestSite" -SiteTitle "Test Site" 	
+
+* Compile the site
+		ipsc -Command "Compile" -SiteFolder -SiteTitle -IndexPageSize
+
+	Compile the site, change md to html and save it to output, copy html to output, copy files to output, create index page and more pages, then covert them to html,and save to output
+
+	Example
+		ipsc -Command "Compile" -SiteFolder "F:\TestSite" -SiteTitle "Test Site" -IndexPageSize "Normal"
+
+For full help, run ipsc -Help FullHelp

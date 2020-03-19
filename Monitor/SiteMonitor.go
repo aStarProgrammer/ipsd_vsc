@@ -12,10 +12,9 @@ import (
 )
 
 type SiteMonitor struct {
-	MonitorFolderPath    string
-	SiteFolderPath       string
-	SiteTitle            string
-	LinkFileLastModified string
+	MonitorFolderPath string
+	SiteFolderPath    string
+	SiteTitle         string
 
 	MarkdownFiles []MarkdownPage
 	HtmlFiles     []HtmlPage
@@ -31,7 +30,7 @@ func NewSiteMonitor() *SiteMonitor {
 	return smp
 }
 
-func NewSiteMonitor_WithArgs(monitorFolderPath, siteFolderPath, siteTitle, linkLastModified string) *SiteMonitor {
+func NewSiteMonitor_WithArgs(monitorFolderPath, siteFolderPath, siteTitle string) *SiteMonitor {
 	var sm SiteMonitor
 	var smp *SiteMonitor
 	smp = &sm
@@ -39,7 +38,6 @@ func NewSiteMonitor_WithArgs(monitorFolderPath, siteFolderPath, siteTitle, linkL
 	smp.MonitorFolderPath = monitorFolderPath
 	smp.SiteFolderPath = siteFolderPath
 	smp.SiteTitle = siteTitle
-	smp.LinkFileLastModified = linkLastModified
 
 	return smp
 }
@@ -321,7 +319,7 @@ func (smp *SiteMonitor) DeleteHtml(filePath string) (bool, error) {
 	return true, nil
 }
 
-func (smp *SiteMonitor) AddLink_Args(linkUrl, ID, linkTitle string, isTop bool) (bool, error) {
+func (smp *SiteMonitor) AddLink_Args(linkUrl, ID, linkTitle, lastModified string) (bool, error) {
 	if smp.GetLink(linkUrl) != -1 {
 		var errMsg = "SiteMonitor.AddLink_Args: Link already added"
 		Utils.Logger.Println(errMsg)
@@ -332,7 +330,7 @@ func (smp *SiteMonitor) AddLink_Args(linkUrl, ID, linkTitle string, isTop bool) 
 	linkPage.Url = linkUrl
 	linkPage.ID = ID
 	linkPage.Title = linkTitle
-	linkPage.IsTop = isTop
+	linkPage.LastModified = lastModified
 
 	smp.LinkFiles = append(smp.LinkFiles, linkPage)
 
@@ -367,7 +365,7 @@ func (smp *SiteMonitor) GetLink(linkUrl string) int {
 	return -1
 }
 
-func (smp *SiteMonitor) UpdateLink_Args(linkUrl, ID, linkTitle string, isTop bool) (bool, error) {
+func (smp *SiteMonitor) UpdateLink_Args(linkUrl, ID, linkTitle, lastModified string) (bool, error) {
 	var index = smp.GetLink(linkUrl)
 
 	if index == -1 {
@@ -379,7 +377,7 @@ func (smp *SiteMonitor) UpdateLink_Args(linkUrl, ID, linkTitle string, isTop boo
 	smp.LinkFiles[index].Url = linkUrl
 	smp.LinkFiles[index].ID = ID
 	smp.LinkFiles[index].Title = linkTitle
-	smp.LinkFiles[index].IsTop = isTop
+	smp.LinkFiles[index].LastModified = lastModified
 
 	return true, nil
 }

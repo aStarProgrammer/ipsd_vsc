@@ -24,6 +24,10 @@ const (
 	COMMAND_LISTFILE          = "ListFile"
 )
 
+const (
+	EXE_IPSC = "ipsc_vsc"
+)
+
 func RunIPSCCommand(ipscCmd *exec.Cmd) (string, error) {
 	var stdoutput bytes.Buffer
 	var stderr bytes.Buffer
@@ -55,7 +59,7 @@ func IPSC_ExportSite(siteFolder, siteTitle, exportFolder string) ([]MarkdownPage
 	}
 
 	//ipsc -Command "ExportSourcePages" -SiteFolder -SiteTitle -ExportFolder
-	var exportCmd = exec.Command("ipsc")
+	var exportCmd = exec.Command(EXE_IPSC)
 	exportCmd.Args = append(exportCmd.Args, "-Command")
 	exportCmd.Args = append(exportCmd.Args, COMMAND_EXPORTSOURCEPAGES)
 	exportCmd.Args = append(exportCmd.Args, "-SiteFolder")
@@ -178,20 +182,14 @@ func IPSC_ExportSite(siteFolder, siteTitle, exportFolder string) ([]MarkdownPage
 				var linkPage LinkPage
 				linkPage.Url = strings.TrimSpace(linkDatas[0])
 				linkPage.ID = strings.TrimSpace(linkDatas[1])
-				linkPage.Title = strings.TrimSpace(linkDatas[2])
-				bIsTop, errParseBool := strconv.ParseBool(linkDatas[3])
+				linkPage.LastModified = Utils.CurrentTime()
+				linkPage.Title = strings.TrimSpace(linkDatas[3])
 
-				if errParseBool == nil {
-					linkPage.IsTop = bIsTop
-				} else {
-					linkPage.IsTop = false
-				}
 				linkPages = append(linkPages, linkPage)
 			}
 
 		}
 	}
-
 	return markdownPages, htmlPages, linkPages, true, nil
 }
 
@@ -203,7 +201,7 @@ func IPSC_AddMarkdown(siteFolder, siteTitle, pagePath, pageTitle, pageAuthor, ti
 		return "", false, errors.New(errMsg)
 	}
 
-	var addCmd = exec.Command("ipsc")
+	var addCmd = exec.Command(EXE_IPSC)
 	addCmd.Args = append(addCmd.Args, "-Command")
 	addCmd.Args = append(addCmd.Args, COMMAND_ADDPAGE)
 	addCmd.Args = append(addCmd.Args, "-SiteFolder")
@@ -261,7 +259,7 @@ func IPSC_AddHtml(siteFolder, siteTitle, pagePath, pageTitle, pageAuthor, titleI
 		return "", false, errors.New(errMsg)
 	}
 
-	var addCmd = exec.Command("ipsc")
+	var addCmd = exec.Command(EXE_IPSC)
 	addCmd.Args = append(addCmd.Args, "-Command")
 	addCmd.Args = append(addCmd.Args, COMMAND_ADDPAGE)
 	addCmd.Args = append(addCmd.Args, "-SiteFolder")
@@ -319,7 +317,7 @@ func IPSC_AddLink(siteFolder, siteTitle, linkUrl, pageTitle, pageAuthor, titleIm
 		return "", false, errors.New(errMsg)
 	}
 
-	var addCmd = exec.Command("ipsc")
+	var addCmd = exec.Command(EXE_IPSC)
 	addCmd.Args = append(addCmd.Args, "-Command")
 	addCmd.Args = append(addCmd.Args, COMMAND_ADDPAGE)
 	addCmd.Args = append(addCmd.Args, "-SiteFolder")
@@ -384,7 +382,7 @@ func IPSC_UpdateMarkdownOrHtml(siteFolder, siteTitle, pageID, pagePath, pageTitl
 		return false, errors.New(errMsg)
 	}
 
-	var updateCmd = exec.Command("ipsc")
+	var updateCmd = exec.Command(EXE_IPSC)
 	updateCmd.Args = append(updateCmd.Args, "-Command")
 	updateCmd.Args = append(updateCmd.Args, COMMAND_UPDATEPAGE)
 	updateCmd.Args = append(updateCmd.Args, "-SiteFolder")
@@ -434,7 +432,7 @@ func IPSC_UpdateLink(siteFolder, siteTitle, pageID, linkUrl, pageTitle, pageAuth
 		return false, errors.New(errMsg)
 	}
 
-	var updateCmd = exec.Command("ipsc")
+	var updateCmd = exec.Command(EXE_IPSC)
 	updateCmd.Args = append(updateCmd.Args, "-Command")
 	updateCmd.Args = append(updateCmd.Args, COMMAND_UPDATEPAGE)
 	updateCmd.Args = append(updateCmd.Args, "-SiteFolder")
@@ -487,7 +485,7 @@ func IPSC_DeletePage(siteFolder, siteTitle, pageID string) (bool, error) {
 		return false, errors.New(errMsg)
 	}
 
-	var deleteCmd = exec.Command("ipsc")
+	var deleteCmd = exec.Command(EXE_IPSC)
 	deleteCmd.Args = append(deleteCmd.Args, "-Command")
 	deleteCmd.Args = append(deleteCmd.Args, COMMAND_DELETEPAGE)
 	deleteCmd.Args = append(deleteCmd.Args, "-SiteFolder")
@@ -525,7 +523,7 @@ func IPSC_CreateMarkdown(siteFolder, siteTitle, pagePath, markdownType string) (
 		return false, errors.New(errMsg)
 	}
 
-	var createMdCmd = exec.Command("ipsc")
+	var createMdCmd = exec.Command(EXE_IPSC)
 	createMdCmd.Args = append(createMdCmd.Args, "-Command")
 	createMdCmd.Args = append(createMdCmd.Args, COMMAND_CREATEMARKDOWN)
 	createMdCmd.Args = append(createMdCmd.Args, "-SiteFolder")
@@ -563,7 +561,7 @@ func IPSC_Compile(siteFolder, siteTitle, indexPageSize string) (bool, error) {
 		return false, errors.New(errMsg)
 	}
 
-	var compileCmd = exec.Command("ipsc")
+	var compileCmd = exec.Command(EXE_IPSC)
 	compileCmd.Args = append(compileCmd.Args, "-Command")
 	compileCmd.Args = append(compileCmd.Args, COMMAND_COMPILE)
 	compileCmd.Args = append(compileCmd.Args, "-SiteFolder")
@@ -605,7 +603,7 @@ func IPSC_AddFile(siteFolder, siteTitle, filePath string) (bool, error) {
 		return false, errors.New(errMsg)
 	}
 
-	var ipscCmd = exec.Command("ipsc")
+	var ipscCmd = exec.Command(EXE_IPSC)
 	ipscCmd.Args = append(ipscCmd.Args, "-Command")
 	ipscCmd.Args = append(ipscCmd.Args, COMMAND_ADDFILE)
 	ipscCmd.Args = append(ipscCmd.Args, "-SiteFolder")
@@ -640,7 +638,7 @@ func IPSC_DeleteFile(siteFolder, siteTitle, filePath string) (bool, error) {
 		return false, errors.New(errMsg)
 	}
 
-	var ipscCmd = exec.Command("ipsc")
+	var ipscCmd = exec.Command(EXE_IPSC)
 	ipscCmd.Args = append(ipscCmd.Args, "-Command")
 	ipscCmd.Args = append(ipscCmd.Args, COMMAND_DELETEFILE)
 	ipscCmd.Args = append(ipscCmd.Args, "-SiteFolder")
@@ -676,7 +674,7 @@ func IPSC_ListFile(siteFolder, siteTitle string) (bool, error) {
 		return false, errors.New(errMsg)
 	}
 
-	var ipscCmd = exec.Command("ipsc")
+	var ipscCmd = exec.Command(EXE_IPSC)
 	ipscCmd.Args = append(ipscCmd.Args, "-Command")
 	ipscCmd.Args = append(ipscCmd.Args, COMMAND_LISTFILE)
 	ipscCmd.Args = append(ipscCmd.Args, "-SiteFolder")

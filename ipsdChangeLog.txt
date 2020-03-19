@@ -37,6 +37,8 @@ If you want to delete it, just delete it from Link.txt, then run ipsd RunMonitor
 
 * Change Link.txt to Link.liks
 
-0.2.0.2 2020/3/8
-1. Move meta of markdown and html form the starting position of the file to a seperate meta data file (.meta)
-2. Remove template folder, users can create md and html files as how they want.
+0.2.1.0 2020/3/18
+* All Links changed to single xxx.lik.json every link has a lik.json
+* Change xxx.mta to xxx.mta.json
+* Change xxx.sm to xxx.sm.json (SiteMonitorDefinition)
+* Delete template folder

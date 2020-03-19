@@ -390,9 +390,8 @@ func GetMetaFilePathWithSameName(filePath string) (string, error) {
 	for _, file := range files {
 		var fName = file.Name()
 		var fPath = filepath.Join(sFolder, fName)
-		var fExt = filepath.Ext(fPath)
-		if fExt == ".meta" {
-			fShortName := strings.Replace(fName, fExt, "", -1)
+		if strings.HasSuffix(fPath, ".mta.json") {
+			fShortName := strings.Replace(fName, ".mta.json", "", -1)
 			if sShortName == fShortName {
 				return fPath, nil
 			}
