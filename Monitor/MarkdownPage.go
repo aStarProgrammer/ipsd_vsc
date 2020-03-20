@@ -51,10 +51,9 @@ func ReadMarkdownPageProperties(filePath string) (*MarkdownProperties, bool, err
 }
 
 type MarkdownProperties struct {
-	Title       string
-	Author      string
-	Description string
-	IsTop       bool
+	Title  string
+	Author string
+	IsTop  bool
 }
 
 type MarkdownPage struct {

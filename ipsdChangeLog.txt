@@ -42,3 +42,10 @@ If you want to delete it, just delete it from Link.txt, then run ipsd RunMonitor
 * Change xxx.mta to xxx.mta.json
 * Change xxx.sm to xxx.sm.json (SiteMonitorDefinition)
 * Delete template folder
+
+0.2.1.1
+*Design Change 
+	Remove Description from mta.json and lik.json
+*Bug Fix
+	When you set the property Author or Title "", ipsd will clear the property of this item in ispc site
+	When you remove the title image, ipsd will clear the titleimage of this item in ipsc site

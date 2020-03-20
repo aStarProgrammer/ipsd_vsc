@@ -51,8 +51,7 @@ func ReadHtmlProperties(filePath string) (*HtmlProperties, bool, error) {
 }
 
 type HtmlProperties struct {
-	Title       string
-	Author      string
-	Description string
-	IsTop       bool
+	Title  string
+	Author string
+	IsTop  bool
 }

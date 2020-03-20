@@ -247,7 +247,6 @@ func testReadMarkdownFile() {
 
 	fmt.Println(mdProperties.Title)
 	fmt.Println(mdProperties.Author)
-	fmt.Println(mdProperties.Description)
 	fmt.Println(mdProperties.IsTop)
 }
 
@@ -264,7 +263,6 @@ func testReadHtmlFileProperties() {
 
 	fmt.Println(htmProperties.Title)
 	fmt.Println(htmProperties.Author)
-	fmt.Println(htmProperties.Description)
 	fmt.Println(htmProperties.IsTop)
 }
 
@@ -300,7 +298,6 @@ func testReadLinksFile() {
 		fmt.Println(link.Url)
 		fmt.Println(link.Author)
 		fmt.Println(link.Title)
-		fmt.Println(link.Description)
 		fmt.Println(link.IsTop)
 		fmt.Println("--------")
 	}

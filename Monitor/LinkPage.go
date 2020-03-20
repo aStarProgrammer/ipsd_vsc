@@ -10,11 +10,10 @@ import (
 )
 
 type LinkMeta struct {
-	Url         string
-	Title       string
-	Author      string
-	Description string
-	IsTop       bool
+	Url    string
+	Title  string
+	Author string
+	IsTop  bool
 }
 
 type LinkPage struct {
